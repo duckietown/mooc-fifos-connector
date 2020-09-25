@@ -1,4 +1,3 @@
-# FROM duckietown/aido3-base-python3:daffy
 ARG AIDO_REGISTRY
 FROM ${AIDO_REGISTRY}/duckietown/aido-base-python3:daffy
 
@@ -11,8 +10,5 @@ RUN pip install --use-feature=2020-resolver -r requirements.resolved
 RUN pip list
 
 COPY . .
-ENV DISABLE_CONTRACTS=1
-
-
 
 ENTRYPOINT ["python3", "middleware.py"]
