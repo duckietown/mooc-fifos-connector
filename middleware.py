@@ -367,6 +367,7 @@ def run_episode(sim_ci: ComponentInterface,
                     logger.debug("Querying commands to agent")
                     r: MsgReceived = agent.write_topic_and_expect('get_commands', gc, expect='commands')
 
+
                 except BaseException as e:
                     msg = 'Trouble with communication to the agent.'
                     raise dc.InvalidSubmission(msg) from e
