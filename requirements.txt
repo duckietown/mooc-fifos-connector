@@ -1,3 +1,4 @@
 duckietown-world-daffy
 duckietown-challenges-daffy
 zuper-nodes-z6
+aido-protocols-daffy
