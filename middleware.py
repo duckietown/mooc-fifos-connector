@@ -151,7 +151,7 @@ async def main():
         robot1_config = RobotConfiguration(pose=pose, velocity=vel)
         robot1 = ScenarioRobotSpec(description="Development agent", playable=True,
                                    configuration=robot1_config, motion=None, color="red")
-        scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1})
+        scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1}, duckies={})
         unique_episode = EpisodeSpec("episode1", scenario1)
 
         episodes = [unique_episode]
