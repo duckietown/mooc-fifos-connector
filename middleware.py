@@ -150,7 +150,7 @@ async def main():
         logger.info(f"Got good starting pose at: {pose}")
         robot1_config = RobotConfiguration(pose=pose, velocity=vel)
         robot1 = ScenarioRobotSpec(description="Development agent", playable=True,
-                                   configuration=robot1_config, motion=None)
+                                   configuration=robot1_config, motion=None, color="red")
         scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1})
         unique_episode = EpisodeSpec("episode1", scenario1)
 
