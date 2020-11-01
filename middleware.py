@@ -25,11 +25,30 @@ from typing import cast, Dict, List  # Iterator
 import duckietown_challenges as dc
 import geometry
 import yaml
-from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, Duckiebot1ObservationsPlusState, GetCommands,
-                          GetRobotObservations, GetRobotState, JPGImage, protocol_agent,
-                          protocol_simulator, RobotConfiguration, RobotObservations, RobotPerformance,
-                          RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
-                          SpawnRobot, Step)
+from aido_schemas import (
+    EpisodeStart,
+    DTSimStateDump,
+    DB20Observations,
+    DB20ObservationsPlusState,
+    GetCommands,
+    GetRobotObservations,
+    GetRobotState,
+    JPGImage,
+    protocol_agent_DB20,
+    protocol_simulator_DB20,
+    RobotConfiguration,
+    RobotObservations,
+    RobotPerformance,
+    RobotState,
+    Scenario,
+    ScenarioRobotSpec,
+    SetMap,
+    SetRobotCommands,
+    SimulationState,
+    SpawnRobot,
+    Step,
+)
+
 from aido_schemas.utils import TimeTracker
 from aido_schemas.protocol_simulator import DumpState
 # from aido_schemas.utils_drawing import read_and_draw
@@ -88,13 +107,13 @@ async def main():
     # first open all fifos
     logger.info("Opening the sim CI")
     sim_ci = ComponentInterface(config.sim_in, config.sim_out,
-                                expect_protocol=protocol_simulator, nickname="simulator",
+                                expect_protocol=protocol_simulator_DB20, nickname="simulator",
                                 timeout=config.timeout_regular)
     logger.info("Pipes connected to simulator")
 
     logger.info("Opening the agent CI")
     agent_ci = ComponentInterface(config.agent_in, config.agent_out,
-                                  expect_protocol=protocol_agent, nickname="agent",
+                                  expect_protocol=protocol_agent_DB20, nickname="agent",
                                   timeout=config.timeout_regular)
     logger.info("Pipes connected to agent")
     agents = [agent_ci]
@@ -406,7 +425,7 @@ async def run_episode(sim_ci: ComponentInterface,
                         executor, f
                     )
                     ro: RobotObservations = recv_observations.data
-                    obs = cast(Duckiebot1Observations, ro.observations)
+                    obs = cast(DB20Observations, ro.observations)
                     await webserver.push(f"{robot_name}-camera", obs.camera.jpg_data)
 
                     # recv: MsgReceived[RobotObservations] = \
@@ -417,10 +436,13 @@ async def run_episode(sim_ci: ComponentInterface,
                     try:
                         logger.debug("Sending observation to agent")
                         map_data = cast(str, scenario.environment)
-                        obs_plus = Duckiebot1ObservationsPlusState(camera=obs.camera,
-                                                                    your_name=robot_name,
-                                                                    state=state_dump.data.state,
-                                                                    map_data=map_data)
+                        obs_plus = DB20ObservationsPlusState(
+                            camera=obs.camera,
+                            odometry=obs.odometry,
+                            your_name=robot_name,
+                            state=state_dump.data.state,
+                            map_data=map_data
+                        )
                         agent.write_topic_and_expect_zero(
                                 "observations", obs_plus
                             )
