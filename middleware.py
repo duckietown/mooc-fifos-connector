@@ -145,7 +145,7 @@ async def main():
         placed_obj = construct_map(yaml_data)
 
         logger.info('Sampling a good starting pose')
-        pose = sample_good_starting_pose(placed_obj, only_straight=True)
+        pose = sample_good_starting_pose(placed_obj, only_straight=True, along_lane=0.2)
         vel = geometry.se2_from_linear_angular([0, 0], 0)
         logger.info(f"Got good starting pose at: {pose}")
         robot1_config = RobotConfiguration(pose=pose, velocity=vel)
