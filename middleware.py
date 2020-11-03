@@ -26,7 +26,7 @@ import duckietown_challenges as dc
 import geometry
 import yaml
 from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, Duckiebot1ObservationsPlusState, GetCommands,
-                          GetRobotObservations, GetRobotState, JPGImage, protocol_agent,
+                          GetRobotObservations, GetRobotState, GetDuckieState, JPGImage, protocol_agent,
                           protocol_simulator, RobotConfiguration, RobotObservations, RobotPerformance,
                           RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
                           SpawnRobot, Step)
@@ -469,6 +469,12 @@ async def run_episode(sim_ci: ComponentInterface,
                     # _recv: MsgReceived[RobotState] = \
                     #     sim_ci.write_topic_and_expect('get_robot_state', rs,
                     #                                 expect='robot_state')
+
+            with tt.measure(f"get_duckie_state"):
+                for duckie_name in scenario.duckies:
+                    rs = GetDuckieState(duckie_name, t_effective)
+                    f = P(sim_ci.write_topic_and_expect, "get_duckie_state", rs, expect="duckie_state")
+                    await loop.run_in_executor(executor, f)
 
             with tt.measure('sim_compute_sim_state'):
                 logger.debug("Computing sim state")
