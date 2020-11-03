@@ -321,6 +321,7 @@ async def run_episode(sim_ci: ComponentInterface,
         sim_ci.write_topic_and_expect_zero('spawn_robot',
                                            SpawnRobot(robot_name=robot_name,
                                                       configuration=robot_conf.configuration,
+                                                      owned_by_player=True,
                                                       playable=robot_conf.playable, motion=None))
 
     # start episode
