@@ -31,7 +31,7 @@ from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, 
                           RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
                           SpawnRobot, Step, protocol_simulator_DB20, protocol_agent_DB20)
 from aido_schemas.utils import TimeTracker
-from aido_schemas.protocol_simulator import DumpState
+from aido_schemas.protocol_simulator import DumpState, PROTOCOL_NORMAL
 # from aido_schemas.utils_drawing import read_and_draw
 # from aido_schemas.utils_video import make_video1
 from duckietown_world import construct_map
