@@ -29,7 +29,7 @@ from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, 
                           GetRobotObservations, GetRobotState, GetDuckieState, JPGImage, protocol_agent,
                           protocol_simulator, RobotConfiguration, RobotObservations, RobotPerformance,
                           RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
-                          SpawnRobot, Step)
+                          SpawnRobot, Step, protocol_simulator_DB20)
 from aido_schemas.utils import TimeTracker
 from aido_schemas.protocol_simulator import DumpState
 # from aido_schemas.utils_drawing import read_and_draw
@@ -88,7 +88,7 @@ async def main():
     # first open all fifos
     logger.info("Opening the sim CI")
     sim_ci = ComponentInterface(config.sim_in, config.sim_out,
-                                expect_protocol=protocol_simulator, nickname="simulator",
+                                expect_protocol=protocol_simulator_DB20, nickname="simulator",
                                 timeout=config.timeout_regular)
     logger.info("Pipes connected to simulator")
 
