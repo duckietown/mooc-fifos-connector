@@ -22,29 +22,26 @@ from dataclasses import dataclass
 from threading import Thread
 from typing import cast, Dict, List  # Iterator
 
-import duckietown_challenges as dc
 import geometry
 import yaml
-from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, Duckiebot1ObservationsPlusState, GetCommands,
-                          GetRobotObservations, GetRobotState, GetDuckieState, JPGImage, protocol_agent,
-                          protocol_simulator, RobotConfiguration, RobotObservations, RobotPerformance,
-                          RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
-                          SpawnRobot, Step, protocol_simulator_DB20, protocol_agent_DB20)
-from aido_schemas.utils import TimeTracker
-from aido_schemas.protocol_simulator import DumpState, PROTOCOL_NORMAL
-# from aido_schemas.utils_drawing import read_and_draw
-# from aido_schemas.utils_video import make_video1
-from duckietown_world import construct_map
-# from duckietown_world.rules import RuleEvaluationResult
-# from duckietown_world.rules.rule import EvaluatedMetric
-from duckietown_world.world_duckietown.map_loading import _get_map_yaml
-from duckietown_world.world_duckietown.sampling_poses import sample_good_starting_pose
-from webserver import WebServer
 from zuper_commons.text import indent
 from zuper_ipce import ipce_from_object, object_from_ipce
 from zuper_nodes.structures import RemoteNodeAborted
 from zuper_nodes_wrapper.wrapper_outside import ComponentInterface, MsgReceived
 from zuper_typing.subcheck import can_be_used_as2
+
+import duckietown_challenges as dc
+from aido_schemas import (DTSimStateDump, Duckiebot1Observations, Duckiebot1ObservationsPlusState,
+                          EpisodeStart, GetCommands, GetDuckieState, GetRobotObservations, GetRobotState,
+                          JPGImage, protocol_agent_DB20, protocol_simulator_DB20, RobotConfiguration,
+                          RobotObservations, RobotPerformance, RobotState, Scenario, ScenarioRobotSpec,
+                          SetMap, SetRobotCommands, SimulationState, SpawnRobot, Step)
+from aido_schemas.protocol_simulator import DumpState, PROTOCOL_NORMAL
+from aido_schemas.utils import TimeTracker
+from duckietown_world import construct_map
+from duckietown_world.world_duckietown.map_loading import _get_map_yaml
+from duckietown_world.world_duckietown.sampling_poses import sample_good_starting_pose
+from webserver import WebServer
 
 # import numpy as np
 
@@ -74,7 +71,8 @@ class MyConfig:
     timeout_initialization: int
     timeout_regular: int
 
-    port: int # port for visualization web server
+    port: int  # port for visualization web server
+
 
 async def main():
     # Set in the docker-compose env section
@@ -150,7 +148,7 @@ async def main():
         logger.info(f"Got good starting pose at: {pose}")
         robot1_config = RobotConfiguration(pose=pose, velocity=vel)
         robot1 = ScenarioRobotSpec(description="Development agent", controllable=True,
-                                   configuration=robot1_config,  protocol=PROTOCOL_NORMAL, color="red")
+                                   configuration=robot1_config, protocol=PROTOCOL_NORMAL, color="red")
         scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1}, duckies={},
                              player_robots=['agent1'])
         unique_episode = EpisodeSpec("episode1", scenario1)
@@ -197,13 +195,13 @@ async def main():
                 raise Exception(msg)  # XXX
             try:
                 length_s = await run_episode(sim_ci,
-                                       agents,
-                                       episode_name=episode_name,
-                                       scenario=episode_spec.scenario,
-                                       episode_length_s=config.episode_length_s,
-                                       physics_dt=config.physics_dt,
-                                       webserver=webserver,
-                                       config=config)
+                                             agents,
+                                             episode_name=episode_name,
+                                             scenario=episode_spec.scenario,
+                                             episode_length_s=config.episode_length_s,
+                                             physics_dt=config.physics_dt,
+                                             webserver=webserver,
+                                             config=config)
                 logger.info('Finished episode %s' % episode_name)
 
             except:
@@ -301,13 +299,13 @@ def notice_thread_child(msg, interval, stop_condition):
 
 
 async def run_episode(sim_ci: ComponentInterface,
-                agents: List[ComponentInterface],
-                physics_dt: float,
-                episode_name,
-                scenario: Scenario,
-                episode_length_s: float,
-                webserver: WebServer,
-                config: MyConfig) -> float:
+                      agents: List[ComponentInterface],
+                      physics_dt: float,
+                      episode_name,
+                      scenario: Scenario,
+                      episode_length_s: float,
+                      webserver: WebServer,
+                      config: MyConfig) -> float:
     ''' returns number of steps '''
 
     # clear simulation
@@ -323,7 +321,7 @@ async def run_episode(sim_ci: ComponentInterface,
                                            SpawnRobot(robot_name=robot_name,
                                                       configuration=robot_conf.configuration,
                                                       owned_by_player=True,
-                                                      playable=robot_conf.playable, motion=None))
+                                                      playable=robot_conf.controllable))
 
     # start episode
     sim_ci.write_topic_and_expect_zero('episode_start', EpisodeStart(episode_name))
@@ -367,11 +365,11 @@ async def run_episode(sim_ci: ComponentInterface,
                 with tt.measure(f'sim_compute_robot_state-{robot_name}'):
                     grs = GetRobotState(robot_name=robot_name, t_effective=t_effective)
                     f = functools.partial(
-                            sim_ci.write_topic_and_expect,
-                            "get_robot_state",
-                            grs,
-                            expect="robot_state",
-                        )
+                        sim_ci.write_topic_and_expect,
+                        "get_robot_state",
+                        grs,
+                        expect="robot_state",
+                    )
 
                     _recv: MsgReceived[RobotState] = await loop.run_in_executor(
                         executor, f
@@ -420,12 +418,12 @@ async def run_episode(sim_ci: ComponentInterface,
                         logger.debug("Sending observation to agent")
                         map_data = cast(str, scenario.environment)
                         obs_plus = Duckiebot1ObservationsPlusState(camera=obs.camera,
-                                                                    your_name=robot_name,
-                                                                    state=state_dump.data.state,
-                                                                    map_data=map_data)
+                                                                   your_name=robot_name,
+                                                                   state=state_dump.data.state,
+                                                                   map_data=map_data)
                         agent.write_topic_and_expect_zero(
-                                "observations", obs_plus
-                            )
+                            "observations", obs_plus
+                        )
                         get_commands = GetCommands(t_effective)
                         f = functools.partial(
                             agent.write_topic_and_expect,
@@ -446,7 +444,8 @@ async def run_episode(sim_ci: ComponentInterface,
                         raise dc.InvalidSubmission(msg) from e
 
                 with tt.measure('set_robot_commands'):
-                    commands = SetRobotCommands(robot_name=robot_name, commands=r.data, t_effective=t_effective)
+                    commands = SetRobotCommands(robot_name=robot_name, commands=r.data,
+                                                t_effective=t_effective)
                     f = functools.partial(
                         sim_ci.write_topic_and_expect_zero,
                         "set_robot_commands",
@@ -474,7 +473,8 @@ async def run_episode(sim_ci: ComponentInterface,
             with tt.measure(f"get_duckie_state"):
                 for duckie_name in scenario.duckies:
                     rs = GetDuckieState(duckie_name, t_effective)
-                    f = P(sim_ci.write_topic_and_expect, "get_duckie_state", rs, expect="duckie_state")
+                    f = functools.partial(sim_ci.write_topic_and_expect, "get_duckie_state", rs,
+                                          expect="duckie_state")
                     await loop.run_in_executor(executor, f)
 
             with tt.measure('sim_compute_sim_state'):
@@ -507,7 +507,6 @@ async def run_episode(sim_ci: ComponentInterface,
                     sim_ci.write_topic_and_expect, "get_ui_image", None, expect="ui_image"
                 )
                 r_ui_image: MsgReceived[JPGImage] = await loop.run_in_executor(executor, f)
-
 
             await webserver.push("ui_image", r_ui_image.data.jpg_data)
             await asyncio.sleep(0.05)
