@@ -149,9 +149,10 @@ async def main():
         vel = geometry.se2_from_linear_angular([0, 0], 0)
         logger.info(f"Got good starting pose at: {pose}")
         robot1_config = RobotConfiguration(pose=pose, velocity=vel)
-        robot1 = ScenarioRobotSpec(description="Development agent", playable=True,
-                                   configuration=robot1_config, motion=None, color="red")
-        scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1}, duckies={})
+        robot1 = ScenarioRobotSpec(description="Development agent", controllable=True,
+                                   configuration=robot1_config,  protocol=PROTOCOL_NORMAL, color="red")
+        scenario1 = Scenario("scenario1", environment=yaml_string, robots={"agent1": robot1}, duckies={},
+                             player_robots=['agent1'])
         unique_episode = EpisodeSpec("episode1", scenario1)
 
         episodes = [unique_episode]
@@ -190,7 +191,7 @@ async def main():
 
             logger.info('Now running episode')
 
-            num_playable = len([_ for _ in episode_spec.scenario.robots.values() if _.playable])
+            num_playable = len([_ for _ in episode_spec.scenario.robots.values() if _.controllable])
             if num_playable != len(agents):
                 msg = f'The scenario requires {num_playable} robots, but I only know {len(agents)} agents.'
                 raise Exception(msg)  # XXX
@@ -340,8 +341,8 @@ async def run_episode(sim_ci: ComponentInterface,
 
     loop = asyncio.get_event_loop()
 
-    playable_robots = [_ for _ in scenario.robots if scenario.robots[_].playable]
-    not_playable_robots = [_ for _ in scenario.robots if not scenario.robots[_].playable]
+    playable_robots = [_ for _ in scenario.robots if scenario.robots[_].controllable]
+    not_playable_robots = [_ for _ in scenario.robots if not scenario.robots[_].controllable]
     playable_robots2agent: Dict[str, ComponentInterface] = {_: v for _, v in zip(playable_robots, agents)}
 
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -489,7 +490,7 @@ async def run_episode(sim_ci: ComponentInterface,
 
                 sim_state: SimulationState = recv.data
                 if sim_state.done:
-                    logger.info(f'Breaking because of simulator ({sim_state.done_code} - {sim_state.done_why}')
+                    logger.info(f'Breaking because of simulator ({sim_state.terminations}')
                     break
 
             with tt.measure('sim_physics'):
@@ -507,7 +508,7 @@ async def run_episode(sim_ci: ComponentInterface,
                 )
                 r_ui_image: MsgReceived[JPGImage] = await loop.run_in_executor(executor, f)
 
-        
+
             await webserver.push("ui_image", r_ui_image.data.jpg_data)
             await asyncio.sleep(0.05)
             # Following line disabled because we don't have a cc, if we need logging set sim_ci._cc and enable
