@@ -29,7 +29,7 @@ from aido_schemas import (EpisodeStart, DTSimStateDump, Duckiebot1Observations, 
                           GetRobotObservations, GetRobotState, GetDuckieState, JPGImage, protocol_agent,
                           protocol_simulator, RobotConfiguration, RobotObservations, RobotPerformance,
                           RobotState, Scenario, ScenarioRobotSpec, SetMap, SetRobotCommands, SimulationState,
-                          SpawnRobot, Step, protocol_simulator_DB20)
+                          SpawnRobot, Step, protocol_simulator_DB20, protocol_agent_DB20)
 from aido_schemas.utils import TimeTracker
 from aido_schemas.protocol_simulator import DumpState
 # from aido_schemas.utils_drawing import read_and_draw
@@ -94,7 +94,7 @@ async def main():
 
     logger.info("Opening the agent CI")
     agent_ci = ComponentInterface(config.agent_in, config.agent_out,
-                                  expect_protocol=protocol_agent, nickname="agent",
+                                  expect_protocol=protocol_agent_DB20, nickname="agent",
                                   timeout=config.timeout_regular)
     logger.info("Pipes connected to agent")
     agents = [agent_ci]
