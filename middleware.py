@@ -24,6 +24,7 @@ from typing import cast, Dict, List  # Iterator
 
 import geometry
 import yaml
+
 from zuper_commons.text import indent
 from zuper_ipce import ipce_from_object, object_from_ipce
 from zuper_nodes.structures import RemoteNodeAborted
@@ -31,11 +32,29 @@ from zuper_nodes_wrapper.wrapper_outside import ComponentInterface, MsgReceived
 from zuper_typing.subcheck import can_be_used_as2
 
 import duckietown_challenges as dc
-from aido_schemas import (DTSimStateDump, Duckiebot1Observations, Duckiebot1ObservationsPlusState,
-                          EpisodeStart, GetCommands, GetDuckieState, GetRobotObservations, GetRobotState,
-                          JPGImage, protocol_agent_DB20, protocol_simulator_DB20, RobotConfiguration,
-                          RobotObservations, RobotPerformance, RobotState, Scenario, ScenarioRobotSpec,
-                          SetMap, SetRobotCommands, SimulationState, SpawnRobot, Step)
+from aido_schemas import (
+    EpisodeStart,
+    DTSimStateDump,
+    DB20Observations,
+    DB20ObservationsPlusState,
+    GetCommands,
+    GetRobotObservations,
+    GetRobotState,
+    JPGImage,
+    protocol_agent_DB20,
+    protocol_simulator_DB20,
+    RobotConfiguration,
+    RobotObservations,
+    RobotPerformance,
+    RobotState,
+    Scenario,
+    ScenarioRobotSpec,
+    SetMap,
+    SetRobotCommands,
+    SimulationState,
+    SpawnRobot,
+    Step,
+)
 from aido_schemas.protocol_simulator import DumpState, PROTOCOL_NORMAL
 from aido_schemas.utils import TimeTracker
 from duckietown_world import construct_map
@@ -406,7 +425,7 @@ async def run_episode(sim_ci: ComponentInterface,
                         executor, f
                     )
                     ro: RobotObservations = recv_observations.data
-                    obs = cast(Duckiebot1Observations, ro.observations)
+                    obs = cast(DB20Observations, ro.observations)
                     await webserver.push(f"{robot_name}-camera", obs.camera.jpg_data)
 
                     # recv: MsgReceived[RobotObservations] = \
@@ -417,10 +436,13 @@ async def run_episode(sim_ci: ComponentInterface,
                     try:
                         logger.debug("Sending observation to agent")
                         map_data = cast(str, scenario.environment)
-                        obs_plus = Duckiebot1ObservationsPlusState(camera=obs.camera,
-                                                                   your_name=robot_name,
-                                                                   state=state_dump.data.state,
-                                                                   map_data=map_data)
+                        obs_plus = DB20ObservationsPlusState(
+                            camera=obs.camera,
+                            odometry=obs.odometry,
+                            your_name=robot_name,
+                            state=state_dump.data.state,
+                            map_data=map_data
+                        )
                         agent.write_topic_and_expect_zero(
                             "observations", obs_plus
                         )
