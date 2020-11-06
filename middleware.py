@@ -434,7 +434,6 @@ async def run_episode(sim_ci: ComponentInterface,
 
                 with tt.measure(f'agent_compute-{robot_name}'):
                     try:
-                        logger.debug("Sending observation to agent")
                         map_data = cast(str, scenario.environment)
                         obs_plus = DB20ObservationsPlusState(
                             camera=obs.camera,
@@ -500,7 +499,6 @@ async def run_episode(sim_ci: ComponentInterface,
                     await loop.run_in_executor(executor, f)
 
             with tt.measure('sim_compute_sim_state'):
-                logger.debug("Computing sim state")
                 f = functools.partial(
                     sim_ci.write_topic_and_expect, "get_sim_state", expect="sim_state"
                 )
@@ -516,7 +514,6 @@ async def run_episode(sim_ci: ComponentInterface,
                     break
 
             with tt.measure('sim_physics'):
-                logger.debug("calling sim_step")
                 current_sim_time += physics_dt
                 f = functools.partial(
                     sim_ci.write_topic_and_expect_zero, "step", Step(current_sim_time)
